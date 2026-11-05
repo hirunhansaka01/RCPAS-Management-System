@@ -1,0 +1,13 @@
+{
+  "routes": [
+    { "path": "/login", "title": "Official access" },
+    { "path": "/", "title": "Dashboard" },
+    { "path": "/members", "title": "Members" },
+    { "path": "/creative-team", "title": "Creative Team" },
+    { "path": "/events", "title": "Events" },
+    { "path": "/event-assignments", "title": "Event Assignments" },
+    { "path": "/equipment", "title": "Equipment" },
+    { "path": "/reports", "title": "Reports" },
+    { "path": "/settings", "title": "Settings" }
+  ]
+}
