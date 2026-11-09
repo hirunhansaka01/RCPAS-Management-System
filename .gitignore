@@ -3,14 +3,12 @@ dist/
 data/
 .env
 .env.*
-!.env.example
 coverage/
 .DS_Store
 
 # stray local archives / scratch files
 *.zip
 rcpas-backup.sqlite
-tests/*.out
 
 # local credentials - never commit these to GitHub
 *password*.txt
