@@ -195,7 +195,7 @@
   // echoed as the X-CSRF-Token header (same contract as the SPA), then redirect
   // into the app on success. Errors surface inline.
   function readCsrf() {
-    const raw = document.cookie.split('; ').find(v => v.startsWith('rcpas_csrf='))?.split('=')[1];
+    const raw = document.cookie.split('; ').find(v => v.startsWith('__Host-rcpas_csrf='))?.split('=')[1];
     return raw ? decodeURIComponent(raw) : '';
   }
 

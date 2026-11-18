@@ -1,59 +1,43 @@
-# RCPAS Management System
+# Rahula College Photographic Art Society Portal
 
-The user interface of an internal administration portal for a photographic art
-society — members and the gear they own, events and the crew assigned to them,
-reports, and a role-based permission model.
+This repository is the functional RCPAS internal administration portal. It preserves the supplied HTML design pack under `reference-ui/` and migrates the navy/cobalt administrative shell, cards, tables, filters, dialogs, and responsive layouts into a React/TypeScript application backed by Express APIs and a file-based SQLite database.
 
-**Original website:** <https://rahulaphotography.vercel.app>
+## Local setup
 
-> **This is the public edition, and it is front end only.** It ships with no
-> server, no API, no database layer, no authentication code, no deployment
-> configuration and no credentials of any kind. No demo or sample data is
-> included either. Nothing here matches a private deployment.
+1. Install Node 20+ and pnpm 10.12.4.
+2. Copy `.env.example` to `.env`. Data lives in a single SQLite file whose path is set by `DATABASE_URL` (default `./data/rcpas.sqlite`), so no MySQL server or external database is required; the file is created on first run.
+3. Run `pnpm install`.
+4. Apply the schema and reference data with `pnpm db:migrate && pnpm db:seed`.
+5. Start the app with `pnpm dev` and open the configured port (3000 by default).
+6. Run `pnpm typecheck`, `pnpm test`, and `pnpm build` before delivery.
 
-## Features
+There are no default credentials. Run `SETUP_ADMIN_EMAIL=... SETUP_ADMIN_PASSWORD=... pnpm db:setup-admin` with the values supplied securely in the deployment environment. This creates an active System Administrator record and stores only a password hash; `SETUP_ADMIN_OPEN_ID` is optional legacy metadata. President and Chief Organizer roles must be granted deliberately; System Administrator does not automatically become President.
 
-- **Members** — registration with auto-generated member codes, many-to-many
-  creative roles, structured search and filters, contact masking, CSV export,
-  archive instead of hard delete.
-- **Gear directory** — member-owned equipment with auto-generated internal IDs,
-  one record per physical item, structured search (brand, model, focal length,
-  mount, keywords, category), owner cards, per-event status workflow.
-- **Event planning workspace** — eight tabs covering requirements, discussion
-  (officials only), team assignment, live readiness, contact sheets and
-  activity; same-date conflict detection; waiving requires a reason.
-- **Assignments** — search members *by the gear they own*, assign, confirm,
-  and soft-cancel while preserving history.
-- **Reports** — live metrics and formula-safe CSV exports.
-- **Settings** — officials, roles, society settings, audit log.
-- **Unified search** — one bar across members, events and gear.
+## Authentication and permissions
 
-## Tech stack
+The app uses database-backed password sessions for active official accounts. Ordinary society members do not have accounts and there is no public registration. Passwords are scrypt-hashed, sessions are secure and expiring, and administrators can activate accounts or assist with password resets.
 
-| Layer    | Choice                          |
-|----------|---------------------------------|
-| Client   | React 18 + TypeScript + Vite    |
-| Styling  | Plain CSS                       |
-| Tooling  | pnpm 10.12.4, Node 22.x         |
+Permissions are enforced in Express middleware on every protected API route. Important overrides (for example scheduling conflicts) require the appropriate permission, an explicit reason, and an audit entry. Members, equipment, and events are archived rather than hard-deleted when historical references exist.
 
-## Quick start
+## Database operations and backup/restore
 
-```bash
-pnpm install
-pnpm dev      # http://localhost:5173
+The committed migrations are `src/server/migrations/0001_initial.sql` and `0002_password_auth.sql`; they are idempotent and safe to re-run. The database is a single SQLite file, so a backup is a file copy while the server is stopped (or a consistent snapshot via the CSV export endpoints):
+
+```powershell
+Copy-Item data/rcpas.sqlite rcpas-backup.sqlite
+Copy-Item rcpas-backup.sqlite data/rcpas.sqlite
 ```
 
-The interface talks to a REST API that is **not** part of this repository, so
-data-driven screens will not populate when the UI is run on its own.
+Never place the administrator password in source control. Keep `.env.example` as the only committed environment template.
 
-## Project structure
+## Deployment
 
-```
-public/            static assets, including the standalone login page
-src/client/        React application (pages, shell, styles)
-src/shared/        shared types and member-code helpers
-```
+The project includes `vercel.json` with a Vite build, API serverless entrypoint, and SPA rewrites. Set `DATABASE_URL` and the administrator setup variables in the deployment environment. The managed Webdev runtime uses `pnpm dev` for Preview and `health` as its unauthenticated readiness endpoint; production honors `PORT` and serves the built client from `dist/client`.
 
-## Credits
+## Completed implementation areas
 
-Developed by **Hirun Hansaka**.
+The implemented application includes official-only custom email/password authentication, role/permission middleware, scrypt password hashing, persistent secure sessions, failed-login lockout, password setup/change, member CRUD/archive/search/filter/CSV, many-to-many creative roles, equipment inventory/archive/search/CSV, event create/list/status/duplicate/cancel flows, conflict-aware assignments with override auditing, dashboard live metrics, report tables and formula-safe CSV export endpoints, society settings, audit log viewing, responsive states, database migrations, seed/setup commands, and automated domain tests.
+
+## Known limitations
+
+The managed database contract intentionally shares development and published data and does not expose a separate disposable test database. Password recovery is administrator-assisted rather than email-based: an authorized official can set or change a password from Settings, while a disabled or locked account must be restored by an administrator. Allocation and assignment screens expose the core API workflows; richer calendar drag/drop and bulk allocation UI can be added without changing the normalized schema.

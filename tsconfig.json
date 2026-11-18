@@ -10,7 +10,7 @@
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "tests", "vite.config.ts", "app.config.ts"]
 }
