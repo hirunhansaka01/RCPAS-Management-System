@@ -268,9 +268,7 @@ textarea.form-control { min-height:88px; padding:10px 11px; resize:vertical; }
    content from one to ten seconds, then progress with a real estimate past
    ten seconds. */
 .skeleton { display:flex; flex-direction:column; gap:14px; padding:6px 0; }
-.sk-row { display:flex; gap:18px; align-items:center; }
 .sk-block { height:14px; border-radius:5px; background:linear-gradient(90deg,#eef2f7 25%,#f8fafc 37%,#eef2f7 63%); background-size:400% 100%; animation:sk-shimmer 1.4s ease infinite; }
-.sk-head .sk-block { height:11px; opacity:.6; }
 @keyframes sk-shimmer { 0% { background-position:100% 0; } 100% { background-position:0 0; } }
 
 /* Tile shape: mirrors the KPI row - label, big number, footnote. */
@@ -280,14 +278,31 @@ textarea.form-control { min-height:88px; padding:10px 11px; resize:vertical; }
 .sk-tile .sk-value { height:30px; width:38%; border-radius:6px; }
 .sk-tile .sk-foot { height:12px; width:76%; margin-top:auto; }
 
-/* Card shape: mirrors a list of person cards - avatar, the two lines of name
-   and detail, and the status pill on the right. */
-.sk-cards { display:flex; flex-direction:column; gap:12px; padding:0; }
-.sk-card { display:flex; align-items:center; gap:14px; padding:16px 18px; background:var(--card); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow-subtle); }
-.sk-avatar { width:40px; height:40px; border-radius:var(--r-inner); flex:none; background:linear-gradient(90deg,#eef2f7 25%,#f8fafc 37%,#eef2f7 63%); background-size:400% 100%; animation:sk-shimmer 1.4s ease infinite; }
-.sk-lines { display:flex; flex-direction:column; gap:9px; flex:1; min-width:0; }
-.sk-lines .sk-block { height:12px; }
-.sk-pill { width:78px; height:22px; border-radius:var(--r-pill); flex:none; }
+/* Table shape: the page's own <table>, so the header bar, column widths, cell
+   padding and row dividers are the real ones. Blocks stand in for the text. */
+.sk-th { height:9px; opacity:.6; }
+.sk-sub { height:11px; margin-top:3px; opacity:.75; }
+.sk-act { width:44px; height:44px; border-radius:var(--r-control); flex:none; }
+.sk-chip { width:74px; height:20px; border-radius:var(--r-pill); flex:none; }
+
+/* Search panel head: the same 44px field, then the line counting results. */
+.sk-input { display:block; width:100%; height:44px; border-radius:var(--r-control); }
+.sk-caption { height:11px; opacity:.8; }
+
+/* Event cards: eyebrow, title, venue line, the two chips, the three buttons. */
+.sk-eyebrow { width:150px; height:9px; opacity:.7; }
+.sk-title-line { height:17px; width:64%; margin-top:8px; }
+.sk-venue { height:11px; width:78%; opacity:.8; margin-top:8px; }
+.sk-chips { display:flex; gap:6px; margin-top:12px; }
+.sk-btns { display:flex; gap:6px; margin-top:15px; }
+.sk-btn { width:96px; height:44px; border-radius:var(--r-control); flex:none; }
+
+/* Compose and add boxes: label, field, radio row, submit button, footnote.
+   Their bordered inner box is the page's own inline border, so it is not
+   repeated here - and the activity trail draws its own row borders too. */
+.sk-label { height:9px; opacity:.6; }
+.sk-radio { width:98px; height:44px; border-radius:var(--r-control); flex:none; }
+.sk-area { height:90px; border-radius:8px; }
 @media (max-width:1100px) { .sk-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:640px) { .sk-tiles { grid-template-columns:1fr; } }
 
