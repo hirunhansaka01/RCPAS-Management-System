@@ -30,8 +30,8 @@ app.use((req, res, next) => {
 app.use(requestContext); app.use(securityHeaders); app.use(cookieParser()); app.use(express.json({ limit: '1mb' }));
 // Seed the CSRF cookie the same way the long-running server does, otherwise every
 // POST/DELETE would fail the csrf middleware (the client echoes this cookie back
-// as the X-CSRF-Token header).
-app.use((req, res, next) => { if (!req.cookies[CSRF_COOKIE]) res.cookie(CSRF_COOKIE, cryptoToken(), { httpOnly: false, sameSite: 'lax', secure: true, path: '/', maxAge: 8 * 60 * 60 * 1000 }); next(); });
+// as the X-CSRF-Token header). One-hour lifetime, matching the long-running server.
+app.use((req, res, next) => { if (!req.cookies[CSRF_COOKIE]) res.cookie(CSRF_COOKIE, cryptoToken(), { httpOnly: false, sameSite: 'lax', secure: true, path: '/', maxAge: 60 * 60 * 1000 }); next(); });
 // Boot/provisioning status, surfaced by /api/health/detail so a failing cold start is
 // diagnosable from the browser (a hard crash here would make every /api request return a
 // gateway error).

@@ -43,7 +43,9 @@ app.use(requestContext); app.use(securityHeaders); app.use(cookieParser()); app.
 // SameSite=Lax keeps the CSRF cookie off cross-site requests entirely — the API is served
 // from this same origin, so Lax never blocks a legitimate call. SameSite=None was sending
 // the token cookie cross-site, which weakened the very protection it exists to provide.
-app.use((req, res, next) => { if (!req.cookies[CSRF_COOKIE]) res.cookie(CSRF_COOKIE, cryptoToken(), { httpOnly: false, sameSite: 'lax', secure: true, path: '/', maxAge: 8 * 60 * 60 * 1000 }); next(); });
+// One hour, not eight: the token is only a request-liveness check, so a short lifetime
+// shrinks the window a leaked cookie stays usable without ever bothering a real session.
+app.use((req, res, next) => { if (!req.cookies[CSRF_COOKIE]) res.cookie(CSRF_COOKIE, cryptoToken(), { httpOnly: false, sameSite: 'lax', secure: true, path: '/', maxAge: 60 * 60 * 1000 }); next(); });
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'rcpas-portal' }));
 // Rate-limit only the credential endpoints. Session reads and logout are not
 // credential checks: limiting them would lock out legitimate page loads.
