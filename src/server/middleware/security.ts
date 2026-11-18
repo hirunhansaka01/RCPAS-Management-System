@@ -10,15 +10,13 @@ export const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 5, skipS
 // Shared policy so the Express responses and vercel.json (which covers the static HTML
 // shell that Express never sees on Vercel) cannot drift apart. frame-ancestors 'none' +
 // X-Frame-Options: DENY close the clickjacking gap on the login page.
-// Strict policy for the SPA. index.html carries no inline script at all - only the Vite
-// module bundle - so 'self' covers everything it needs, and dropping 'unsafe-inline' plus
-// the Tailwind CDN origin is what turns CSP into a real XSS mitigation instead of a
+// Strict policy, one for the whole app including /login: index.html carries no inline
+// script at all - only the Vite module bundle - and the standalone login page now loads
+// its behaviour from /login.js and its styles from /login.css (prebuilt by
+// `pnpm build:login`), so 'self' covers everything it needs. Dropping 'unsafe-inline'
+// plus the Tailwind CDN origin is what turns CSP into a real XSS mitigation instead of a
 // declaration of intent. Style stays 'unsafe-inline' because React sets style attributes.
 export const csp = "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self'";
-// The standalone login page is authored with inline onsubmit/onclick handlers, an inline
-// Tailwind config and the Tailwind CDN, so it keeps the original policy until it is
-// refactored to external scripts. It is the only exception.
-export const cspLogin = "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; connect-src 'self'";
 /** Cookie carrying the double-submit CSRF token. The `__Host-` prefix makes the browser
  *  refuse any copy of it set by another host or subdomain; it requires Secure, Path=/ and
  *  no Domain, all of which the setters below honour. JS-readable by design. */
@@ -29,7 +27,7 @@ export function securityHeaders(req: Request, res: Response, next: NextFunction)
   res.setHeader('Referrer-Policy', 'same-origin');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  res.setHeader('Content-Security-Policy', req.path === '/login' || req.path === '/login.html' ? cspLogin : csp);
+  res.setHeader('Content-Security-Policy', csp);
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   // Everything Express serves is API or session-bound. `public` told shared caches the

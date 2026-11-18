@@ -7,41 +7,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "surface": "#FAF8FF",
-            "royal-navy": "#000945",
-            "navy-container": "#121f64",
-            "navy-light": "#172574",
-            "gold": "#ea9e1a",
-            "gold-light": "#ffb953",
-            "gold-container": "#fdae2d",
-            "gold-dark": "#825500",
-            "border-subtle": "#E2E7FF",
-            "border-input": "#CBD5E1",
-            "text-primary": "#131b2e",
-            "text-secondary": "#454650",
-            "text-muted": "#767682"
-          },
-          fontFamily: {
-            headline: ["Plus Jakarta Sans", "Inter", "sans-serif"],
-            serif: ["Cinzel", "serif"],
-            body: ["Inter", "sans-serif"]
-          },
-          boxShadow: {
-            "gold-glow": "0 4px 20px -2px rgba(234, 158, 26, 0.35)",
-            "navy-glow": "0 8px 24px -4px rgba(18, 31, 100, 0.35)",
-            "card-clean": "0 10px 40px -10px rgba(0, 9, 69, 0.06)"
-          }
-        }
-      }
-    };
-  </script>
+<link href="/login.css" rel="stylesheet"/>
 </head>
 <body class="h-full font-body text-text-primary antialiased bg-white selection:bg-gold/20 selection:text-gold-dark m-0 p-0 overflow-x-hidden">
 <div class="min-h-full w-full flex flex-col lg:flex-row">
@@ -121,7 +87,7 @@
 <div id="loginError" class="hidden mb-4 flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs leading-relaxed"></div>
 
 <!-- Login Form -->
-<form class="space-y-5" onsubmit="event.preventDefault(); signIn();">
+<form class="space-y-5" id="loginForm">
 <!-- Email -->
 <div class="space-y-1.5">
 <label class="block text-xs font-bold uppercase tracking-wider text-text-secondary" for="adminEmail">
@@ -141,7 +107,7 @@
 <label class="block text-xs font-bold uppercase tracking-wider text-text-secondary" for="adminPassword">
             Password
           </label>
-<a class="text-xs font-semibold text-royal-navy hover:text-gold-dark transition-colors" href="#forgot-key" onclick="alert('Contact the system administrator to reset your password.'); return false;">
+<a id="forgotLink" class="text-xs font-semibold text-royal-navy hover:text-gold-dark transition-colors" href="#forgot-key">
             Forgot password?
           </a>
 </div>
@@ -150,7 +116,7 @@
 <span class="material-symbols-outlined text-[20px]">lock</span>
 </div>
 <input autocomplete="current-password" class="block w-full pl-10 pr-11 py-3 text-sm bg-surface rounded-lg border border-border-input text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-royal-navy focus:bg-white transition-all tracking-wide shadow-sm font-medium" id="adminPassword" placeholder="Enter your password" required="" type="password" value=""/>
-<button class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-text-muted hover:text-royal-navy transition-colors" id="togglePassword" onclick="togglePasswordVisibility()" title="Toggle password visibility" type="button">
+<button class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-text-muted hover:text-royal-navy transition-colors" id="togglePassword" title="Toggle password visibility" type="button">
 <span class="material-symbols-outlined text-[20px]" id="eyeIcon">visibility</span>
 </button>
 </div>
@@ -174,75 +140,5 @@
 </div>
 </div>
 
-<script>
-  document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-  function togglePasswordVisibility() {
-    const input = document.getElementById('adminPassword');
-    const icon = document.getElementById('eyeIcon');
-    if (!input || !icon) return;
-
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.textContent = 'visibility_off';
-    } else {
-      input.type = 'password';
-      icon.textContent = 'visibility';
-    }
-  }
-
-  // Real authentication: POST /api/auth/password/login with the CSRF cookie
-  // echoed as the X-CSRF-Token header (same contract as the SPA), then redirect
-  // into the app on success. Errors surface inline.
-  function readCsrf() {
-    const raw = document.cookie.split('; ').find(v => v.startsWith('__Host-rcpas_csrf='))?.split('=')[1];
-    return raw ? decodeURIComponent(raw) : '';
-  }
-
-  function showError(message) {
-    const box = document.getElementById('loginError');
-    if (box) { box.textContent = message; box.classList.remove('hidden'); }
-  }
-
-  async function signIn() {
-    const btn = document.getElementById('signInBtn');
-    const text = document.getElementById('buttonText');
-    const email = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value;
-    if (!btn || !text) return;
-
-    const box = document.getElementById('loginError');
-    if (box) { box.classList.add('hidden'); box.textContent = ''; }
-
-    if (!email || !password) { showError('Enter your email and password.'); return; }
-
-    btn.disabled = true;
-    btn.classList.add('opacity-90', 'cursor-not-allowed');
-    text.textContent = 'Signing in…';
-
-    try {
-      let csrf = readCsrf();
-      if (!csrf) { await fetch('/api/auth/session', { credentials: 'include' }); csrf = readCsrf(); }
-
-      const res = await fetch('/api/auth/password/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRF-Token': csrf } : {}) },
-        body: JSON.stringify({ email, password })
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || 'Sign in failed. Please try again.');
-
-      text.textContent = 'Signed in! Redirecting…';
-      btn.classList.remove('bg-royal-navy', 'hover:bg-[#121f64]');
-      btn.classList.add('bg-emerald-700');
-      setTimeout(() => { window.location.assign('/'); }, 600);
-    } catch (e) {
-      showError(e && e.message ? e.message : 'Sign in failed. Please try again.');
-      btn.disabled = false;
-      btn.classList.remove('opacity-90', 'cursor-not-allowed');
-      text.textContent = 'Sign in';
-    }
-  }
-</script>
+<script src="/login.js"></script>
 </body></html>
