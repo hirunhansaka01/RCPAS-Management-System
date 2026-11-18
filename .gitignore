@@ -16,3 +16,6 @@ tests/*.out
 *password*.txt
 *secret*.txt
 credentials*.txt
+
+# security assessments stay on disk only - never in either repo
+RCPAS_SECURITY_REPORT*.txt
